@@ -6,11 +6,11 @@ using BenchmarkDotNet.Attributes;
 
 namespace VectorParallelTest.Common
 {
-    [ClrJob, CoreJob]
+    [CoreJob]
     public class AverageComputationBenchmark
     {
         private readonly float[] _data;
-        private const int DataSize = 256 * 1024 * 1024;
+        private const int DataSize = 1024 * 1024 * 1024;
 
         public AverageComputationBenchmark()
         {
@@ -27,6 +27,18 @@ namespace VectorParallelTest.Common
         public double ParallelAverage()
         {
             return ParallelAverage(SimpleRangeSum);
+        }
+
+        [Benchmark]
+        public double Vector4Average()
+        {
+            return Vector4RangeSum(_data, 0, DataSize) / DataSize;
+        }
+
+        [Benchmark]
+        public double ParallelVector4Average()
+        {
+            return ParallelAverage(Vector4RangeSum);
         }
 
         [Benchmark]
@@ -75,6 +87,20 @@ namespace VectorParallelTest.Common
             }
 
             return totalSum;
+        }
+
+        private static double Vector4RangeSum(float[] array, int lowerInclusive, int upperExclusize)
+        {
+            var count = upperExclusize - lowerInclusive;
+            var vectorCount = count / 4;
+            var sum = new Vector4();
+            for (var i = 0; i < vectorCount; ++i)
+            {
+                var offset = lowerInclusive + i * 4;
+                sum += new Vector4(array[offset], array[offset + 1], array[offset + 2], array[offset + 3]);
+            }
+
+            return sum.X + sum.Y + sum.Z + sum.W;
         }
 
         private static double SimpleRangeSum(float[] array, int lowerInclusive, int upperExclusize)
