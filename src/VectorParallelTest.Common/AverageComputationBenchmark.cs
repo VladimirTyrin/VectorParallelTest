@@ -10,7 +10,7 @@ namespace VectorParallelTest.Common
     public class AverageComputationBenchmark
     {
         private readonly float[] _data;
-        private const int DataSize = 1024 * 1024 * 1024;
+        private const int DataSize = 256 * 1024 * 1024;
 
         public AverageComputationBenchmark()
         {
